@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Color Converter</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Image Color Converter</h1>
+            <p>Upload an image to convert it to a professional color palette</p>
+        </header>
+        <main>
+            <div class="upload-section">
+                <div class="upload-box" id="dropZone">
+                    <input type="file" id="imageUpload" accept="image/*" class="hidden">
+                    <label for="imageUpload" class="upload-label">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"></path>
+                            <line x1="16" y1="5" x2="22" y2="5"></line>
+                            <line x1="19" y1="2" x2="19" y2="8"></line>
+                            <circle cx="9" cy="9" r="2"></circle>
+                            <path d="M21 15l-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
+                        </svg>
+                        <span>Drag & drop an image or click to browse</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="color-palette">
+                    <h3>Target Color Palette</h3>
+                    <div class="colors">
+                        <div class="color-swatch" data-color="#D7A583" style="background-color: #D7A583;"></div>
+
+                        <div class="color-swatch" data-color="#E3C8AB" style="background-color: #E3C8AB;"></div>
+                        <div class="color-swatch" data-color="#8B4513" style="background-color: #8B4513;"></div>
+                    </div>
+                </div>
+                <button id="convertBtn" class="btn">Convert Image</button>
+                <button id="downloadBtn" class="btn secondary" disabled>Download Result</button>
+            </div>
+
+            <div class="results">
+                <div class="image-container">
+                    <div class="image-box">
+                        <h3>Original Image</h3>
+                        <canvas id="originalCanvas"></canvas>
+                    </div>
+                    <div class="image-box">
+                        <h3>Converted Image</h3>
+                        <canvas id="convertedCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>© 2023 Image Color Converter | Professional Palette Tool</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
