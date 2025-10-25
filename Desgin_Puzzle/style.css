@@ -1,0 +1,202 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background-color: white; /* Changed from black */
+  margin: 0;
+  padding: 20px;
+  color: #333;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+h1 {
+  color: black; /* Changed from black */
+  margin-bottom: 5px;
+}
+
+.instructions {
+  color: black; /* Changed from black */
+  margin-bottom: 20px;
+  max-width: 600px;
+  margin: 0 auto 20px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: white;
+  padding: 20px;
+  border-radius: 0;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.grid-container {
+  margin-bottom: 30px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  grid-template-rows: repeat(3, 100px);
+  gap: 0;
+  background-color: white;
+  border: 0.01px solid black; /* Changed from black */
+  margin: 0 auto;
+}
+
+.cell {
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  border: 0.1px solid black; /* Changed from black */
+  box-sizing: border-box;
+}
+
+.puzzle-pieces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 30px;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.puzzle-piece {
+  width: 90px;
+  height: 90px;
+  background-color: black; /* Changed from black */
+  position: relative;
+  cursor: grab;
+  user-select: none;
+  border-radius: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 0.01px solid black;
+}
+
+.puzzle-piece.selected {
+  outline: 2px solid #4CAF50; /* Changed from blue */
+}
+
+.symbol-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.symbol-circle {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border: px solid black; /* Changed from black */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  overflow: hidden;
+}
+
+.minus-vertical {
+  transform: rotate(90deg);
+}
+
+.division-vertical {
+  transform: rotate(90deg);
+}
+
+/* Position the circles at the edges to show only half */
+.top-circle {
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
+}
+
+.right-circle {
+  right: -30px;
+  top: 50%;
+  transform: translateY(-50%);
+  clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+}
+
+.bottom-circle {
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+}
+
+.left-circle {
+  left: -30px;
+  top: 50%;
+  transform: translateY(-50%);
+  clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
+}
+
+.symbol {
+  font-weight: bold;
+  color: black; /* Changed from black */
+  font-size: 42px;
+  line-height: 60px;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.controls {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 25px;
+  justify-content: center;
+}
+
+button {
+  padding: 12px 24px;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+#result {
+  margin-top: 20px;
+  font-size: 18px;
+  color: #333;
+  height: 24px;
+  min-height: 24px;
+}
+
+/* Remove footer if not needed */
+.footer {
+  display: none;
+}
+
+/* Add some spacing for better layout */
+hr {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 20px 0;
+  width: 100%;
+}
