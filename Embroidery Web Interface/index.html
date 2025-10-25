@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DST File Merger</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>DST File Merger</h1>
+        <p>Enter a word (1-12 letters) to merge the corresponding DST files:</p>
+        <form method="POST" action="/">
+            <input type="text" name="word" maxlength="12" minlength="1" required placeholder="Enter 1-12 letters">
+            <button type="submit">Merge & Download</button>
+        </form>
+        <div id="message"></div>
+    </div>
+</body>
+</html>
