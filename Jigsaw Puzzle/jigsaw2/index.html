@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jigswan Puzzle Solver</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Jigswan Puzzle Solver</h1>
+        <label for="imageUpload" style="font-weight: bold; margin-right: 10px;">Choose puzzle image:</label>
+        <input type="file" id="imageUpload" accept="image/*" style="margin: 20px 0; display: block;" />
+        <p class="instructions">
+            In this puzzle, <strong>+</strong> (blue) indicates a tab ("in") and <strong>-</strong> (red) indicates a notch ("out").
+            When two pieces connect, a + must match with a - (the sum should be 0). Edges of the puzzle must be flat (value 0).
+        </p>
+        <div class="controls">
+            <button id="solveBtn">Solve Puzzle</button>
+            <button id="showTilesBtn">Show All Pieces</button>
+            <input type="number" id="tileIndex" placeholder="Piece index (0-99)" min="0" max="99" value="0">
+            <button id="showSingleTileBtn">Show Single Piece</button>
+            <button id="manualSolveBtn">Try Manual Solving</button>
+            <button id="downloadSolutionsBtn" disabled>Download Solutions</button>
+            <button id="mapImageToSolutionsBtn" disabled>Map Image to All Solutions</button>
+        </div>
+        <!-- Tile position finder -->
+        <div id="tilePositionFinder" style="margin: 20px 0;">
+            <input type="text" id="tileNumbersInput" placeholder="Enter tile numbers, e.g. 0,2,-5,-8" style="padding: 8px; width: 220px;">
+            <button id="findTilePositionBtn" style="padding: 8px 16px;">Find Position in Solution 2</button>
+            <span id="tilePositionResult" style="margin-left: 16px; font-weight: bold;"></span>
+        </div>
+        <div id="tileRotationFinder" style="margin: 20px 0;">
+            <input type="text" id="rotationTileNumbersInput" placeholder="Enter tile numbers, e.g. 0,5,-6,-5" style="padding: 8px; width: 220px;">
+            <button id="findTileRotationBtn" style="padding: 8px 16px;">Find Rotation & Direction in Solution 2</button>
+        </div>
+        <div id="tileRotationResult" style="margin-top: 10px; font-weight: bold; min-height: 24px;"></div>
+        <div id="result">Number of solutions will appear here.</div>
+        <div id="tilesDisplay"></div>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        // Global variables
+        let currentSolutions = [];
+        let tilesData = [];
+        let originalImage = null; // Store the original image
+
+        // Function to handle puzzle solving and enable download
+        async function solvePuzzle() {
+            const resultDiv = document.getElementById('result');
+            const downloadBtn = document.getElementById('downloadSolutionsBtn');
+            const mapBtn = document.getElementById('mapImageToSolutionsBtn');
+            
+            try {
+                resultDiv.textContent = 'Solving puzzle...';
+                downloadBtn.disabled = true;
+                mapBtn.disabled = true;
+                
+                // Get solutions from the solver
+                const solutions = await findPuzzleSolutions(tilesData);
+                currentSolutions = solutions;
+                
+                if (solutions && solutions.length > 0) {
+                    resultDiv.textContent = `Found ${solutions.length} solution(s)!`;
+                    downloadBtn.disabled = false;
+                    mapBtn.disabled = false;
+                } else {
+                    resultDiv.textContent = 'No solutions found';
+                    downloadBtn.disabled = true;
+                    mapBtn.disabled = true;
+                }
+            } catch (error) {
+                resultDiv.textContent = `Error: ${error.message}`;
+                downloadBtn.disabled = true;
+                mapBtn.disabled = true;
+            }
+        }
+
+        // Function to download solutions
+        function downloadSolutions() {
+            if (!currentSolutions || currentSolutions.length === 0) {
+                alert('No solutions available. Please solve the puzzle first.');
+                return;
+            }
+
+            try {
+                // Create the solutions object
+                const solutionsData = {
+                    timestamp: new Date().toISOString(),
+                    numberOfSolutions: currentSolutions.length,
+                    solutions: currentSolutions
+                };
+
+                // Convert to JSON and create blob
+                const jsonString = JSON.stringify(solutionsData, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                
+                // Create download link
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                a.href = url;
+                a.download = `puzzle-solutions-${timestamp}.json`;
+                
+                // Trigger download
+                document.body.appendChild(a);
+                a.click();
+                
+                // Cleanup
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('Failed to download solutions. Please try again.');
+            }
+        }
+
+        // Function to map image to all solutions
+        async function mapImageToAllSolutions() {
+            if (!originalImage || !currentSolutions || currentSolutions.length === 0) {
+                alert('Please upload an image and solve the puzzle first.');
+                return;
+            }
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = 'Mapping image to all solutions...';
+
+            try {
+                const mappedSolutions = [];
+                for (let i = 0; i < currentSolutions.length; i++) {
+                    const solution = currentSolutions[i];
+                    const mappedImage = await mapImageToSolution(originalImage, solution, tilesData);
+                    mappedSolutions.push({
+                        solutionIndex: i + 1,
+                        solution: solution,
+                        mappedImage: mappedImage
+                    });
+                }
+
+                // Display all mapped solutions
+                const tilesDisplay = document.getElementById('tilesDisplay');
+                tilesDisplay.innerHTML = '';
+                
+                mappedSolutions.forEach(({solutionIndex, mappedImage}) => {
+                    const solutionDiv = document.createElement('div');
+                    solutionDiv.className = 'solution-container';
+                    solutionDiv.innerHTML = `
+                        <h3>Solution ${solutionIndex}</h3>
+                        <img src="${mappedImage}" alt="Solution ${solutionIndex}">
+                    `;
+                    tilesDisplay.appendChild(solutionDiv);
+                });
+
+                resultDiv.textContent = `Successfully mapped image to all ${currentSolutions.length} solutions!`;
+            } catch (error) {
+                console.error('Mapping error:', error);
+                resultDiv.textContent = 'Error mapping image to solutions.';
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('solveBtn').addEventListener('click', solvePuzzle);
+        document.getElementById('downloadSolutionsBtn').addEventListener('click', downloadSolutions);
+
+        // Image upload handler
+        document.getElementById('imageUpload').addEventListener('change', async function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                try {
+                    // Reset current state
+                    currentSolutions = [];
+                    document.getElementById('downloadSolutionsBtn').disabled = true;
+                    document.getElementById('mapImageToSolutionsBtn').disabled = true;
+                    document.getElementById('result').textContent = 'Processing image...';
+                    
+                    // Store the original image
+                    originalImage = await createImageBitmap(file);
+                    
+                    // Process the image and get tiles data
+                    tilesData = await processImage(file);
+                    document.getElementById('result').textContent = 'Image processed. Click "Solve Puzzle" to find solutions.';
+                } catch (error) {
+                    console.error('Image processing error:', error);
+                    document.getElementById('result').textContent = 'Error processing image.';
+                }
+            }
+        });
+
+        // Add event listener for the new button
+        document.getElementById('mapImageToSolutionsBtn').addEventListener('click', mapImageToAllSolutions);
+
+        // Handler to find rotation difference and direction for a specific tile (by numbers) between solution1 and solution2
+        const rotationBtn = document.getElementById('findTileRotationBtn');
+        if (rotationBtn) {
+            rotationBtn.addEventListener('click', function() {
+                const numbersInput = document.getElementById('rotationTileNumbersInput');
+                const resultSpan = document.getElementById('tileRotationResult');
+                const tileNumbersStr = numbersInput.value.trim();
+                if (!tileNumbersStr) {
+                    resultSpan.textContent = 'Please enter tile numbers.';
+                    return;
+                }
+                if (!Array.isArray(window.globalSolutions) ||
+                    !Array.isArray(window.globalSolutions[0]?.grid) ||
+                    !Array.isArray(window.globalSolutions[1]?.grid)) {
+                    resultSpan.textContent = 'Both solutions must be available.';
+                    return;
+                }
+                // Parse tile numbers
+                const tileNumbers = tileNumbersStr.split(',').map(s => parseInt(s.trim(), 10));
+                if (tileNumbers.some(isNaN)) {
+                    resultSpan.textContent = 'Invalid tile numbers.';
+                    return;
+                }
+                // Find the tile in both solutions (all rotations)
+                function findTileInSolution(solution, tileNumbers) {
+                    for (let r = 0; r < solution.grid.length; r++) {
+                        for (let c = 0; c < solution.grid[r].length; c++) {
+                            let tile = solution.grid[r][c];
+                            if (!tile) continue;
+                            let t = tile.slice();
+                            for (let rot = 0; rot < 4; rot++) {
+                                if (t.every((n, i) => n === tileNumbers[i])) {
+                                    return { pos: [r, c], rotation: rot };
+                                }
+                                t = [t[1], t[2], t[3], t[0]];
+                            }
+                        }
+                    }
+                    return null;
+                }
+                const sol1 = window.globalSolutions[0];
+                const sol2 = window.globalSolutions[1];
+                const found1 = findTileInSolution(sol1, tileNumbers);
+                const found2 = findTileInSolution(sol2, tileNumbers);
+                if (!found1 || !found2) {
+                    resultSpan.textContent = 'Tile not found in both solutions.';
+                    return;
+                }
+                // Calculate rotation difference
+                let delta = (found2.rotation - found1.rotation + 4) % 4;
+                let degrees = delta * 90;
+                let direction = '';
+                if (delta === 0) {
+                    resultSpan.textContent = `Tile [${tileNumbers.join(',')}] has no rotation difference in Solution 2 compared to Solution 1.`;
+                } else if (delta === 2) {
+                    resultSpan.textContent = `Tile [${tileNumbers.join(',')}] is rotated 180° in Solution 2 compared to Solution 1.`;
+                } else if (delta === 1) {
+                    resultSpan.textContent = `Tile [${tileNumbers.join(',')}] is rotated 90° anticlockwise in Solution 2 compared to Solution 1.`;
+                } else if (delta === 3) {
+                    resultSpan.textContent = `Tile [${tileNumbers.join(',')}] is rotated 90° clockwise in Solution 2 compared to Solution 1.`;
+                }
+            });
+        }
+
+        function drawRotatedPieceImage(x, y, image, rotationDelta) {
+            const ctx = canvas.getContext('2d');
+            const angle = rotationDelta * Math.PI / 2; // Convert to radians
+
+            ctx.save();
+            ctx.translate(x + image.width/2, y + image.height/2); // Move to center of piece
+            ctx.rotate(angle);
+            ctx.drawImage(image, -image.width/2, -image.height/2);
+            ctx.restore();
+        }
+
+        console.log(window.globalSolutions);
+        console.log(window.globalSolutions[0]);
+        console.log(window.globalSolutions[1]);
+        console.log(window.globalSolutions[0]?.grid);
+        console.log(window.globalSolutions[1]?.grid);
+    </script>
+</body>
+</html>
