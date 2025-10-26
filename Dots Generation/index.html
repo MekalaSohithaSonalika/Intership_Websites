@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grayscale to Dots Converter</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Grayscale to Dots Converter</h1>
+        <input type="file" id="imageInput" accept="image/*">
+        <button id="convertButton">Convert to Dots</button>
+        <div class="canvas-wrapper">
+            <canvas id="outputCanvas" width="800" height="800"></canvas>
+        </div>
+        <div class="controls">
+            <label for="dotSize">Dot Size (px):</label>
+            <input type="range" id="dotSize" min="1" max="5" value="2">
+            <label for="spacing">Grid Spacing (px):</label>
+            <input type="range" id="spacing" min="3" max="15" value="5">
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
